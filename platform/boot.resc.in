@@ -1,0 +1,12 @@
+# M0 boot: load the F´ ReferenceDeployment ELF on Renode's stm32h753 platform.
+# Placeholders __REPL__ and __ELF__ are filled in by ci/run_hil.sh.
+
+mach create "stm32h753"
+machine LoadPlatformDescription @__REPL__
+
+# Expose USART1 (the GDS link in the reference) on a TCP socket so the host can read it.
+emulation CreateServerSocketTerminal 3456 "uart_term"
+connector Connect sysbus.usart1 uart_term
+
+sysbus LoadELF @__ELF__
+start

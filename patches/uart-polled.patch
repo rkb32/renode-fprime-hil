@@ -1,0 +1,13 @@
+diff --git a/FprimeStm32BaremetalReference/Deployments/ReferenceDeployment/Top/ReferenceDeploymentTopology.cpp b/FprimeStm32BaremetalReference/Deployments/ReferenceDeployment/Top/ReferenceDeploymentTopology.cpp
+index 6d4c82b..b619be7 100644
+--- a/FprimeStm32BaremetalReference/Deployments/ReferenceDeployment/Top/ReferenceDeploymentTopology.cpp
++++ b/FprimeStm32BaremetalReference/Deployments/ReferenceDeployment/Top/ReferenceDeploymentTopology.cpp
+@@ -72,7 +72,7 @@ void configureTopology() {
+ 
+     const Fw::Success comDriverOpened = comDriver.open(FW_COM_BUFFER_MAX_SIZE, Stm32::UsartInstance::Usart1,
+                                                         USART_IRQ_PREEMPT_PRIORITY, USART_IRQ_SUB_PRIORITY,
+-                                                        BAUD_RATE);
++                                                        BAUD_RATE, Stm32::TransferMode::POLLED);
+     if(comDriverOpened == Fw::Success::FAILURE) {
+         Fw::Logger::log("[ERROR] Failed to open UART\n");
+     }

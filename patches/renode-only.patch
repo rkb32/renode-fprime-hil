@@ -1,0 +1,42 @@
+diff --git a/FprimeStm32BaremetalReference/Deployments/ReferenceDeployment/Top/ReferenceDeploymentTopology.cpp b/FprimeStm32BaremetalReference/Deployments/ReferenceDeployment/Top/ReferenceDeploymentTopology.cpp
+index 6d4c82b..b619be7 100644
+--- a/FprimeStm32BaremetalReference/Deployments/ReferenceDeployment/Top/ReferenceDeploymentTopology.cpp
++++ b/FprimeStm32BaremetalReference/Deployments/ReferenceDeployment/Top/ReferenceDeploymentTopology.cpp
+@@ -72,7 +72,7 @@ void configureTopology() {
+ 
+     const Fw::Success comDriverOpened = comDriver.open(FW_COM_BUFFER_MAX_SIZE, Stm32::UsartInstance::Usart1,
+                                                         USART_IRQ_PREEMPT_PRIORITY, USART_IRQ_SUB_PRIORITY,
+-                                                        BAUD_RATE);
++                                                        BAUD_RATE, Stm32::TransferMode::POLLED);
+     if(comDriverOpened == Fw::Success::FAILURE) {
+         Fw::Logger::log("[ERROR] Failed to open UART\n");
+     }
+@@ -89,8 +89,6 @@ void configureTopology() {
+         Fw::Logger::log("[ERROR] Failed to open BMP280 SPI driver\n");
+     }
+ 
+-    // IMU Manager initialization
+-    MpuImu::imuManager.configure(0x68);
+ }
+ 
+ void setupTopology(const TopologyState& state) {
+diff --git a/FprimeStm32BaremetalReference/Deployments/ReferenceDeployment/Top/topology.fpp b/FprimeStm32BaremetalReference/Deployments/ReferenceDeployment/Top/topology.fpp
+index 69b582b..ce72728 100644
+--- a/FprimeStm32BaremetalReference/Deployments/ReferenceDeployment/Top/topology.fpp
++++ b/FprimeStm32BaremetalReference/Deployments/ReferenceDeployment/Top/topology.fpp
+@@ -19,7 +19,6 @@ module ReferenceDeployment {
+     import ComCcsds.Subtopology
+     import DataProducts.Subtopology
+     import FileHandling.Subtopology
+-    import MpuImu.Subtopology
+     import Bmp280.Subtopology
+     
+   # ----------------------------------------------------------------------
+@@ -112,7 +111,6 @@ module ReferenceDeployment {
+       rateGroup_1Hz.RateGroupMemberOut[4] -> ComCcsds.aggregator.timeout
+       rateGroup_1Hz.RateGroupMemberOut[5] -> CdhCore.cmdDisp.run
+       rateGroup_1Hz.RateGroupMemberOut[6] -> comDriver.run
+-      rateGroup_1Hz.RateGroupMemberOut[8] -> MpuImu.imuManager.run
+       rateGroup_1Hz.RateGroupMemberOut[9] -> Bmp280.bmpManager.run
+ 
+       # 0.5Hz rate group

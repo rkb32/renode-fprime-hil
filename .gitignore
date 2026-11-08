@@ -1,0 +1,10 @@
+.venv/
+reference/
+build-ci/
+out/
+hil-logs/
+*_logs/
+*.bin
+*.orig
+*.stale
+__pycache__/
