@@ -5,7 +5,7 @@ Date: 2026-11-07. Drafted by Claude Haiku 5.5 with Opus 5.5 decision checks. Not
 ## Status
 - **M0 (UART output from the firmware): met.** The firmware boots and sends telemetry.
 - **M1 (GDS smoke tests): met.** The unmodified smoke tests (original 15 s and 5 s timeouts) pass 2 of 2 in 10.3 s (`m1_final.sh`, log `m1_final_logs/pytest.log`), using `bridge_multi.py`. The earlier failures came from the test bridge, not the GDS (see Corrections).
-- **M3, IMU (blocked):** with the IMU restored (UART still POLLED), both smoke tests fail. The board sends about 1 KB, then stops. Renode has no STM32H7 I2C model (`STM32H7_I2C` not in the install; `i2c1` is `STM32F7_I2C`), so the firmware's I2C driver likely hangs during init. Unverified: no program-counter check. The MPU-6050 model (`platform/MPU6050.cs`) was never read by the firmware. The CI build stays IMU-free and M1 passes on it.
+- **M3, IMU (blocked):** with the IMU restored (UART still POLLED), both smoke tests fail. The board sends about 1 KB, then stops. Renode has no STM32H7 I2C model (`STM32H7_I2C` not in the install; `i2c1` is `STM32F7_I2C`), so the firmware's I2C driver hangs during init. Verified by two program-counter samples: both land in the HAL's `I2C_WaitOnSTOPFlagUntilTimeout` / `I2C_IsErrorOccurred`, which poll for a STOP flag the F7 model never sets. Unverified: whether that wait ever times out. The MPU-6050 model (`platform/MPU6050.cs`) was never read by the firmware. The CI build stays IMU-free and M1 passes on it.
 - **M3, SPI5 BMP280 (blocked):** Renode has no SPI5 controller model (only spi4 in the platform). The Python stand-in remains.
 
 ## Verified
@@ -30,6 +30,7 @@ Date: 2026-11-07. Drafted by Claude Haiku 5.5 with Opus 5.5 decision checks. Not
 - Probe hooks print to the monitor and may perturb timing. Hook counts are approximate.
 
 ## Corrections to earlier notes
+- **ELF size gap (explained in part):** the loaded sections match between the local build and the CI build (`.text` and `.bss` identical). `.rodata` differs by 832 bytes (version string `-dirty` and build paths). The remaining ~7.8 KB of file size is in non-loaded debug sections, not checked.
 - **Root cause of the "no telemetry" failure (verified):** `bridge_wsl.py` accepts one TCP client. In run 4, `ss` showed the bridge accepted a different client (127.0.0.1:45098), while comm's connection (127.0.0.1:52802, comm pid 12492) sat unaccepted in the listen backlog. comm read 0 bytes; the bridge's 60 KB went to the other client. The GDS was not at fault. Fix: `bridge_multi.py` serves every client. With it, the unmodified M1 tests pass.
 - Run 1 of the comm hook was invalid (Renode not running). Runs 2–4 are logged in `m2_instr_logs/`.
 - `m1_long.sh` does pass `--gui none`; an earlier note said it did not.

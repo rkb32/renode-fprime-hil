@@ -8,3 +8,4 @@ hil-logs/
 *.orig
 *.stale
 __pycache__/
+archive/
