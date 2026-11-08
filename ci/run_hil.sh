@@ -67,5 +67,6 @@ sleep 5
 kill "$GDS_PID" "$BRIDGE_PID" 2>/dev/null
 pkill -f fprime_gds.executables 2>/dev/null
 pkill -f "$WORK/boot.resc" 2>/dev/null
-cp -r "$REF_DIR/logs" "$OUT/gds-logs" 2>/dev/null
+# Archive the GDS logs: some file names contain colons, which upload-artifact rejects
+tar -czf "$OUT/gds-logs.tar.gz" -C "$REF_DIR" logs 2>/dev/null || true
 exit $RC
