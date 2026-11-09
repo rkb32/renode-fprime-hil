@@ -1,5 +1,9 @@
 # M0 boot: load the F´ ReferenceDeployment ELF on Renode's stm32h753 platform.
-# Placeholders __REPL__ and __ELF__ are filled in by ci/run_hil.sh.
+# Placeholders __REPL__, __ELF__ and __MODELS__ are filled in by ci/run_hil.sh.
+
+# Controller and sensor models used by the platform file (C# peripherals, compiled by Renode at load time).
+include @__MODELS__/STM32H7_I2C.cs
+include @__MODELS__/MPU6050.cs
 
 mach create "stm32h753"
 machine LoadPlatformDescription @__REPL__

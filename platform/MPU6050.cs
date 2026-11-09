@@ -1,5 +1,5 @@
 // MPU-6050 register-level I2C model for Renode (M3 spike). Not validated against silicon.
-// Covers: WHO_AM_I (0x75), PWR_MGMT_1 (0x6B), accel/temp/gyro output registers (0x3B..0x48).
+// Covers: WHO_AM_I (0x75), PWR_MGMT_1 (0x6B, DEVICE_RESET self-clears), accel/temp/gyro output registers (0x3B..0x48).
 // Load with: include @MPU6050.cs  (before the platform that instantiates Sensors.MPU6050).
 
 using System;
@@ -48,6 +48,11 @@ namespace Antmicro.Renode.Peripherals.Sensors
             {
                 regs[pointer & 0xFF] = data[i];
                 pointer = (pointer + 1) & 0xFF;
+            }
+            // DEVICE_RESET (PWR_MGMT_1 bit 7): restore the register defaults, and clear the bit as the device does.
+            if ((regs[0x6B] & 0x80) != 0)
+            {
+                Reset();
             }
         }
 

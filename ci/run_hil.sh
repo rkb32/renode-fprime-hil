@@ -22,7 +22,7 @@ DICT_ABS="$(readlink -f "$DICT")"
 # Fill in machine-specific paths in a private copy of the platform files
 cp "$ROOT/platform/bmp280_spi5.py" "$WORK/"
 sed "s|@@BMP280_SCRIPT@@|$WORK/bmp280_spi5.py|" "$ROOT/platform/my_stm32h743.repl" > "$WORK/my_stm32h743.repl"
-sed -e "s|__REPL__|$WORK/my_stm32h743.repl|" -e "s|__ELF__|$ELF_ABS|" "$ROOT/platform/boot.resc.in" > "$WORK/boot.resc"
+sed -e "s|__REPL__|$WORK/my_stm32h743.repl|" -e "s|__ELF__|$ELF_ABS|" -e "s|__MODELS__|$ROOT/platform|" "$ROOT/platform/boot.resc.in" > "$WORK/boot.resc"
 
 # Renode: emulated board; USART1 served on TCP 127.0.0.1:3456
 "$RENODE" --disable-xwt --port 1234 "$WORK/boot.resc" > "$OUT/renode.log" 2>&1 &

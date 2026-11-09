@@ -1,0 +1,118 @@
+--- a/ImuHelpers.cpp
++++ b/ImuHelpers.cpp
+@@ -34,6 +34,21 @@
+ Drv::I2cStatus ImuManager ::configure_device() {
+     Fw::ParamValid paramValid;
+     Drv::I2cStatus status = Drv::I2cStatus::I2C_OK;
++    // Identity probe: read WHO_AM_I (0x75). The HAL does not always report a NACK on this one-byte write, so the value
++    // is what proves the device answered. A bad value returns to RESET like any other configure error.
++    {
++        U8 whoAmIRegister = WHO_AM_I_REGISTER;
++        U8 whoAmI = 0;
++        Fw::Buffer writeBuffer(&whoAmIRegister, sizeof(whoAmIRegister));
++        Fw::Buffer readBuffer(&whoAmI, sizeof(whoAmI));
++        status = this->bus_write(writeBuffer, readBuffer);
++        if (status != Drv::I2cStatus::I2C_OK) {
++            return status;
++        }
++        if (whoAmI != WHO_AM_I_VALUE) {
++            return Drv::I2cStatus::I2C_OTHER_ERR;
++        }
++    }
+     // Read accelerometer parameter and configure
+     {
+         const AccelerationRange accelerationRange = this->paramGet_ACCELEROMETER_RANGE(paramValid);
+--- a/ImuTypes.hpp
++++ b/ImuTypes.hpp
+@@ -17,6 +17,8 @@
+     static constexpr U8 POWER_ON_VALUE = 0x00;
+     static constexpr U8 GYRO_CONFIG_REGISTER = 0x1B;
+     static constexpr U8 ACCEL_CONFIG_REGISTER = 0x1C;
++    static constexpr U8 WHO_AM_I_REGISTER = 0x75;
++    static constexpr U8 WHO_AM_I_VALUE = 0x68;
+ 
+     // Configuration values for the accelerometer and gyroscope
+     static constexpr U8 ACCEL_CONFIG_2G = 0x00;
+--- a/test/ut/ImuManagerTester.hpp
++++ b/test/ut/ImuManagerTester.hpp
+@@ -14,7 +14,16 @@
+ 
+ class ImuManagerTester : public ImuManagerGTestBase, public ::testing::Test {
+   public:
+-    enum State { RESET, WAIT_RESET, WAIT_RESET_FINISH, POWER_ON, CONFIGURE_ACCELEROMETER, CONFIGURE_GYROSCOPE, RUN };
++    enum State {
++        RESET,
++        WAIT_RESET,
++        WAIT_RESET_FINISH,
++        POWER_ON,
++        CONFIGURE_WHO_AM_I,
++        CONFIGURE_ACCELEROMETER,
++        CONFIGURE_GYROSCOPE,
++        RUN
++    };
+ 
+     // ----------------------------------------------------------------------
+     // Constants
+--- a/test/ut/ImuManagerTester.cpp
++++ b/test/ut/ImuManagerTester.cpp
+@@ -54,13 +54,14 @@
+     this->tick();
+     ASSERT_from_busWrite_SIZE(1);
+     ASSERT_from_busWriteRead_SIZE(0);
+-    this->verify_state_and_clear(ImuManagerTester::State::CONFIGURE_ACCELEROMETER);
++    this->verify_state_and_clear(ImuManagerTester::State::CONFIGURE_WHO_AM_I);
+ }
+ 
+ void ImuManagerTester ::reconfigure_sequence() {
+     // Trigger configuration, will end in RUN state
+     this->tick();
+     ASSERT_from_busWrite_SIZE(2);
++    ASSERT_from_busWriteRead_SIZE(1);
+     this->verify_state_and_clear(ImuManagerTester::State::RUN);
+ }
+ 
+@@ -214,6 +215,13 @@
+             EXPECT_EQ(writeBuffer.getData()[0], 0x6B);
+             EXPECT_EQ(writeBuffer.getData()[1], 0x00);
+             EXPECT_EQ(readBuffer.getSize(), 0);
++            this->state = ImuManagerTester::State::CONFIGURE_WHO_AM_I;
++            break;
++        case ImuManagerTester::State::CONFIGURE_WHO_AM_I:
++            EXPECT_EQ(writeBuffer.getSize(), 1);
++            EXPECT_EQ(writeBuffer.getData()[0], 0x75);
++            EXPECT_EQ(readBuffer.getSize(), 1);
++            readBuffer.getData()[0] = 0x68;  // MPU-6050 WHO_AM_I value
+             this->state = ImuManagerTester::State::CONFIGURE_ACCELEROMETER;
+             break;
+         case ImuManagerTester::State::CONFIGURE_ACCELEROMETER:
+--- a/test/ut/ImuManagerTestMain.cpp
++++ b/test/ut/ImuManagerTestMain.cpp
+@@ -26,11 +26,27 @@
+     ASSERT_EVENTS_AccelerometerRangeUpdated(0, this->accelerationRange);
+     ASSERT_EVENTS_GyroscopeRangeUpdated_SIZE(1);
+     ASSERT_EVENTS_GyroscopeRangeUpdated(0, this->gyroscopeRange);
+-    this->state = ImuManagerTester::State::CONFIGURE_ACCELEROMETER;
++    this->state = ImuManagerTester::State::CONFIGURE_WHO_AM_I;
+     this->reconfigure_sequence();
+     this->nominal_run_sequence();
+ }
+ 
++TEST_F(ImuManagerTester, WhoAmIProbeFailureReturnsToReset) {
++    this->nominal_boot_sequence();
++    // Fail the WHO_AM_I probe: configuration must stop before the accelerometer write, report the error and go to RESET
++    this->failureRate = 100;
++    this->tick();
++    ASSERT_from_busWriteRead_SIZE(1);
++    ASSERT_from_busWrite_SIZE(0);
++    ASSERT_EVENTS_I2cError_SIZE(1);
++    ASSERT_EQ(this->state, ImuManagerTester::State::RESET);
++    // Recover: the next tick starts the reset sequence again
++    this->failureRate = 0;
++    this->clearHistory();
++    this->tick();
++    this->verify_state_and_clear(ImuManagerTester::State::WAIT_RESET);
++}
++
+ TEST_F(ImuManagerTester, FailureRate) {
+     // Choose a failure rate up to about 10% of the time
+     this->failureRate = STest::Pick::lowerUpper(10, 10);
