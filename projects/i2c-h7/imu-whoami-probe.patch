@@ -53,6 +53,16 @@
  
      // ----------------------------------------------------------------------
      // Constants
+@@ -127,6 +136,9 @@
+     //! Failure rate to use on the I2C bus
+     U8 failureRate = 0;
+ 
++    //! WHO_AM_I value the mock device returns (0x68 is the MPU-6050 identity)
++    U8 whoAmIReadback = 0x68;
++
+     //! Counter for I2C failures
+     U32 i2cFailure = 0;
+ };
 --- a/test/ut/ImuManagerTester.cpp
 +++ b/test/ut/ImuManagerTester.cpp
 @@ -54,13 +54,14 @@
@@ -71,23 +81,27 @@
      this->verify_state_and_clear(ImuManagerTester::State::RUN);
  }
  
-@@ -214,6 +215,13 @@
+@@ -214,7 +215,16 @@
              EXPECT_EQ(writeBuffer.getData()[0], 0x6B);
              EXPECT_EQ(writeBuffer.getData()[1], 0x00);
              EXPECT_EQ(readBuffer.getSize(), 0);
+-            this->state = ImuManagerTester::State::CONFIGURE_ACCELEROMETER;
 +            this->state = ImuManagerTester::State::CONFIGURE_WHO_AM_I;
 +            break;
 +        case ImuManagerTester::State::CONFIGURE_WHO_AM_I:
 +            EXPECT_EQ(writeBuffer.getSize(), 1);
 +            EXPECT_EQ(writeBuffer.getData()[0], 0x75);
 +            EXPECT_EQ(readBuffer.getSize(), 1);
-+            readBuffer.getData()[0] = 0x68;  // MPU-6050 WHO_AM_I value
-             this->state = ImuManagerTester::State::CONFIGURE_ACCELEROMETER;
++            readBuffer.getData()[0] = this->whoAmIReadback;
++            // A wrong identity is a configure error: the component goes to RESET without the accelerometer write
++            this->state = (this->whoAmIReadback == 0x68) ? ImuManagerTester::State::CONFIGURE_ACCELEROMETER
++                                                          : ImuManagerTester::State::RESET;
              break;
          case ImuManagerTester::State::CONFIGURE_ACCELEROMETER:
+             EXPECT_EQ(writeBuffer.getSize(), 2);
 --- a/test/ut/ImuManagerTestMain.cpp
 +++ b/test/ut/ImuManagerTestMain.cpp
-@@ -26,11 +26,27 @@
+@@ -26,11 +26,43 @@
      ASSERT_EVENTS_AccelerometerRangeUpdated(0, this->accelerationRange);
      ASSERT_EVENTS_GyroscopeRangeUpdated_SIZE(1);
      ASSERT_EVENTS_GyroscopeRangeUpdated(0, this->gyroscopeRange);
@@ -108,6 +122,22 @@
 +    ASSERT_EQ(this->state, ImuManagerTester::State::RESET);
 +    // Recover: the next tick starts the reset sequence again
 +    this->failureRate = 0;
++    this->clearHistory();
++    this->tick();
++    this->verify_state_and_clear(ImuManagerTester::State::WAIT_RESET);
++}
++
++TEST_F(ImuManagerTester, WhoAmIMismatchReturnsToReset) {
++    this->nominal_boot_sequence();
++    // The bus succeeds but the device reports the wrong identity: configuration must stop before the accelerometer write
++    this->whoAmIReadback = 0x00;
++    this->tick();
++    ASSERT_from_busWriteRead_SIZE(1);
++    ASSERT_from_busWrite_SIZE(0);
++    ASSERT_EVENTS_I2cError_SIZE(1);
++    ASSERT_EQ(this->state, ImuManagerTester::State::RESET);
++    // Recover: the device reports its real identity on the next cycle
++    this->whoAmIReadback = 0x68;
 +    this->clearHistory();
 +    this->tick();
 +    this->verify_state_and_clear(ImuManagerTester::State::WAIT_RESET);
