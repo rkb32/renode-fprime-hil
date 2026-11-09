@@ -176,6 +176,8 @@ namespace Antmicro.Renode.Peripherals.I2C
                 // The hardware ends the transfer with a STOP after the NACK; the HAL waits for STOPF.
                 isr |= ISR_STOPF;
                 isr &= ~ISR_BUSY;
+                // A NACK flushes TXDR on hardware. Drop the byte preloaded before START so it cannot be sent by the next write.
+                txPreload.Clear();
                 UpdateInterrupts();
                 return;
             }
