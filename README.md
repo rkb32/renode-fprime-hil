@@ -5,7 +5,7 @@ Runs the F´ reference deployment for STM32H7 (`fprime-community/fprime-stm32-ba
 ## Status
 
 - **Smoke job (no hardware):** passes locally, 2 of 2 unmodified tests.
-- **IMU (MPU-6050):** not in this build. With the IMU restored, the firmware stalls, because Renode has no STM32H7 I2C model.
+- **IMU (MPU-6050):** not in this build. The STM32H7 I2C model and MPU-6050 model are on branch `i2c-h7-controller`; see [projects/i2c-h7/README.md](projects/i2c-h7/README.md). Not validated against silicon.
 - **BMP280 on SPI5:** Python stand-in only. Renode has no SPI5 controller model.
 
 See `BLOCKER.md` for the details and what is unverified.
