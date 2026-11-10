@@ -39,4 +39,4 @@ The sim is slow under load: use `SLEEP_SECONDS=420` (the default). A 130 s run s
 
 - Not validated against silicon.
 - Not modelled: interrupt and DMA modes, slave mode, RELOAD, bus errors, clock stretching.
-- A STOP request clears TC (fix in `platform/STM32H7_I2C.cs`, found by Codex review). The polled HAL doesn't use TC, so this path is not exercised. The RM0433 basis is unverified.
+- A STOP request clears TC (fix in `platform/STM32H7_I2C.cs`, found by Codex review; RM0433 section 47.9.7). The polled HAL doesn't use TC, so this path is not exercised.
