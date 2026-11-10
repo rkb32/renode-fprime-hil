@@ -44,6 +44,7 @@ Date: 2026-11-07. Drafted by Claude Haiku 5.5 with Opus 5.5 decision checks. Not
 - Cause: unexplained. The morning host state was not recorded. Environment suspected.
 - The smoke test file is identical to upstream 89f1924. The runner now logs host state and leftover processes (`host_state.txt`) and per-test timing (`--durations=0`).
 - Status: not reproduced today. The 5 s wait is unchanged.
+- 2026-11-10, IMU-kept build (`--with-imu`, local): 3 of 4 runs passed. The failing run (`~/imu-rep-3`) had 0 events matched for `test_cmd_no_op`. Its GDS event log shows CMD_NO_OP and OpCodeCompleted about 1 s after pytest started, inside the 5 s window. So the events were logged in time; the test API did not match them. Cause not found.
 
 ## Models and build changes (Renode-only)
 1. **PWR peripheral** (Python) in `my_stm32h743.repl`. Replaces Renode's plain tag. Returns ready bits.

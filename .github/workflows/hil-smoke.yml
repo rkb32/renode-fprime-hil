@@ -31,6 +31,27 @@ jobs:
           path: out/
           if-no-files-found: error
 
+  build-elf-imu:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Cache Arm toolchain 12.2
+        uses: actions/cache@v4
+        with:
+          path: ~/arm-gnu-toolchain-12.2.mpacbti-rel1-x86_64-arm-none-eabi
+          key: arm-gnu-12.2.mpacbti-rel1
+      - name: Build ELF with IMU kept (uart-polled patch + WHO_AM_I probe)
+        run: bash ci/build_elf.sh --with-imu
+      - uses: actions/upload-artifact@v4
+        with:
+          name: reference-elf-imu
+          path: out/
+          if-no-files-found: error
+
   renode-smoke:
     needs: build-elf
     runs-on: ubuntu-latest
@@ -64,4 +85,39 @@ jobs:
         if: always()
         with:
           name: hil-logs
+          path: ${{ runner.temp }}/hil-logs
+
+  renode-smoke-imu:
+    needs: build-elf-imu
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/download-artifact@v4
+        with:
+          name: reference-elf-imu
+          path: out/
+      - name: Install Renode 1.16.0 (sha256 checked)
+        run: bash ci/install_renode.sh
+      - name: Fetch pinned reference and Python venv
+        run: |
+          bash ci/fetch_reference.sh "$RUNNER_TEMP/reference"
+          python3 -m venv "$RUNNER_TEMP/venv"
+          "$RUNNER_TEMP/venv/bin/pip" install -q -r ci/requirements.txt
+      - name: Run unmodified smoke tests on Renode (IMU kept)
+        run: |
+          RENODE="$HOME/renode/renode" \
+          ELF=out/ReferenceDeployment.elf \
+          DICT=out/ReferenceDeploymentTopologyDictionary.json \
+          REF_DIR="$RUNNER_TEMP/reference" \
+          VENV="$RUNNER_TEMP/venv" \
+          OUT="$RUNNER_TEMP/hil-logs" \
+          bash ci/run_hil.sh
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: hil-logs-imu
           path: ${{ runner.temp }}/hil-logs
