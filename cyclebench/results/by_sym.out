@@ -1,0 +1,9 @@
+   403.0  d739    403.0  1031      0.0  memset
+    35.0  d739     35.0  1031      0.0  Harness::SinkCompComponentBase::TlmIn_handlerBase(short, unsigned long, Fw::Time&, Harness::SinkCompComponentBase::TlmIn_handlerBase::LinearBufferTemplate<
+    25.0  d739     25.0  1031      0.0  Harness::SinkComp::TlmIn_handler(short, unsigned long, Fw::Time&, Harness::SinkComp::TlmIn_handler::LinearBufferTemplate<
+    24.0  d739     24.0  1031      0.0  void
+    20.0  d739     20.0  1031      0.0  Harness::HarnessCompComponentBase::Tlm_out(short, unsigned long, Fw::Time&, Harness::HarnessCompComponentBase::Tlm_out::LinearBufferTemplate<
+    14.0  d739    112.0  1031     98.0  Harness::HarnessCompComponentBase::tlmWrite_Chan
+     0.1  d739      0.7  1031      0.6  HAL_IncTick
+     0.0  d739      0.2  1031      0.1  SysTick_Handler
+total delta 383.2

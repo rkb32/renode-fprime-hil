@@ -1,0 +1,22 @@
+20:20:32.0774 [INFO] Loaded monitor commands from: C:\Program Files\Renode\scripts/monitor.py
+[0mRenode, version 1.16.0 (20ad06d9-202508030343)
+
+[31;1m(monitor) [0minclude @C:/Users/ranje/AppData/Local/Temp/claude/ffde25afbf8de2a1/9f6b1a5c-0264-4ba7-95a5-688c185ab010/scratchpad/cyc_est/trace_d739_2000.resc
+20:20:32.3122 [INFO] Including script: C:\Users\ranje\AppData\Local\Temp\claude\ffde25afbf8de2a1\9f6b1a5c-0264-4ba7-95a5-688c185ab010\scratchpad\cyc_est\trace_d739_2000.resc
+20:20:32.4698 [INFO] System bus created.
+20:20:37.1888 [INFO] Reading cache
+20:20:38.2295 [INFO] sysbus: Loaded SVD: C:\Users\ranje\AppData\Local\Temp\renode-27824\526b3cad-1432-4a12-b737-659d89d039cc.tmp. Name: STM32F40x. Description: STM32F40x.
+20:20:38.4455 [INFO] sysbus: Loading block of 58156 bytes length at 0x8000000.
+20:20:38.4986 [INFO] sysbus: Loading block of 3048 bytes length at 0x800E32C.
+20:20:38.4986 [INFO] sysbus: Loading block of 1536 bytes length at 0x800EA0C.
+20:20:41.2738 [INFO] cpu: Guessing VectorTableOffset value to be 0x8000000.
+20:20:41.2944 [INFO] cpu: Setting initial values: PC = 0x8000DFD, SP = 0x20018000.
+20:20:41.3077 [INFO] tr: Machine started.
+20:20:41.6698 [WARNING] flash_controller: Unhandled write to offset 0x0. Unhandled bits: [9] when writing value 0x200. Tags: ICEN (0x1).
+20:20:41.6793 [WARNING] flash_controller: Unhandled write to offset 0x0. Unhandled bits: [10] when writing value 0x400. Tags: DCEN (0x1).
+20:20:49.6427 [INFO] tr: Machine paused.
+20:20:49.6572 [INFO] tracer: Stopping the execution tracer worker and dumping the trace to a file...
+20:20:58.7604 [INFO] tracer: Execution tracer stopped, output file: C:/Users/ranje/AppData/Local/Temp/claude/ffde25afbf8de2a1/9f6b1a5c-0264-4ba7-95a5-688c185ab010/scratchpad/cyc_est/trace_d739_2000.txt
+0x000000000023565C
+[;032mR[0m[;032me[0m[;032mn[0m[;032mo[0m[;032md[0m[;032me[0m[;032m [0m[;032mi[0m[;032ms[0m[;032m [0m[;032mq[0m[;032mu[0m[;032mi[0m[;032mt[0m[;032mt[0m[;032mi[0m[;032mn[0m[;032mg[0m[;032m[0m[;032m
+[0m[;032m[0m[0m[0m20:20:58.9107 [INFO] tr: Disposed.
