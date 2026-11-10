@@ -138,6 +138,8 @@ namespace Antmicro.Renode.Peripherals.I2C
             cr2 = value & ~(CR2_START | CR2_STOP);
             if((value & CR2_STOP) != 0 && (isr & ISR_BUSY) != 0)
             {
+                // A STOP request clears TC, so a completion flag cannot outlive the transfer.
+                isr &= ~ISR_TC;
                 isr |= ISR_STOPF;
                 EndBus();
                 UpdateInterrupts();

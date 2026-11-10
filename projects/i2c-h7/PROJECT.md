@@ -55,7 +55,7 @@ Not modelled or not exercised (unverified):
 - Interrupt mode, DMA, slave mode, 10-bit addressing, RELOAD/TCR, bus errors, arbitration, timeouts, clock stretching.
 - NACK on a multi-byte transfer (reset) is run on target with no MPU on the bus: the firmware retries with no crash or hang (2 NACKs in 40 s). A NACK on a one-byte write is not reported by the HAL; see the probe notes above.
 - NACK path (commits `ce9af40`, `9927299`; 2026-11-09): the no-slave NACK branch now clears the preloaded TXDR byte, `txPending`, `txBuffer` and `rxQueue`, matching `EndBus`. Renode NACK-on-write trace (test-only copy): the reset write after a forced accelerometer-write NACK is `6B-80`; before the fix it was `1C-80` with "second byte dropped". Smoke tests on the fixed model: first run 1 of 2 (`test_cmd_no_op` timed out; cause not found, renode log stopped during IMU reset), rerun 2 of 2.
-- TC not cleared on STOP (review finding, low, unverified).
+- TC cleared on STOP request (Codex P2 review finding; fix in `platform/STM32H7_I2C.cs`; NACK trace and smoke run after the fix: trace reset write still `6B-80`, smoke pytest_exit=0). RM0433 basis unverified; not validated against silicon.
 - Behaviour is not validated against silicon.
 
 ## Out of scope
