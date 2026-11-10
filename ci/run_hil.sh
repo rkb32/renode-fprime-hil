@@ -15,6 +15,17 @@ SMOKE="$REF_DIR/FprimeStm32BaremetalReference/Deployments/ReferenceDeployment/te
 if [ -z "$OUT" ] || [ "$OUT" = "/" ]; then echo "refusing to clear OUT=$OUT" >&2; exit 1; fi
 rm -rf "$OUT"
 mkdir -p "$OUT"
+# Host state and leftover processes before the run, so a failing run can be compared with a passing one
+{
+  echo "date=$(date '+%F %T.%N')"
+  echo "loadavg=$(cut -d' ' -f1-3 /proc/loadavg) nproc=$(nproc)"
+  grep -E '^(MemTotal|MemAvailable):' /proc/meminfo | tr -s ' ' | tr '\n' ' '; echo
+  echo "cpu_stat=$(head -n 1 /proc/stat)"
+  echo "leftover_procs:"; pgrep -af 'renode|fprime_gds|bridge_multi|boot.resc' || echo "  none"
+  for p in 1234 3456 50000; do
+    if (exec 3<>/dev/tcp/127.0.0.1/$p) 2>/dev/null; then echo "port_$p=busy_before_start"; else echo "port_$p=free"; fi
+  done
+} > "$OUT/host_state.txt" 2>&1
 WORK="$(mktemp -d)"
 ELF_ABS="$(readlink -f "$ELF")"
 DICT_ABS="$(readlink -f "$DICT")"
@@ -22,7 +33,7 @@ DICT_ABS="$(readlink -f "$DICT")"
 # Fill in machine-specific paths in a private copy of the platform files
 cp "$ROOT/platform/bmp280_spi5.py" "$WORK/"
 sed "s|@@BMP280_SCRIPT@@|$WORK/bmp280_spi5.py|" "$ROOT/platform/my_stm32h743.repl" > "$WORK/my_stm32h743.repl"
-sed -e "s|__REPL__|$WORK/my_stm32h743.repl|" -e "s|__ELF__|$ELF_ABS|" "$ROOT/platform/boot.resc.in" > "$WORK/boot.resc"
+sed -e "s|__REPL__|$WORK/my_stm32h743.repl|" -e "s|__ELF__|$ELF_ABS|" -e "s|__MODELS__|$ROOT/platform|" "$ROOT/platform/boot.resc.in" > "$WORK/boot.resc"
 
 # Renode: emulated board; USART1 served on TCP 127.0.0.1:3456
 "$RENODE" --disable-xwt --port 1234 "$WORK/boot.resc" > "$OUT/renode.log" 2>&1 &
@@ -58,8 +69,10 @@ if ! kill -0 "$GDS_PID" 2>/dev/null; then
   exit 1
 fi
 
-"$VENV/bin/python" -m pytest -v "$SMOKE" --dictionary "$DICT_ABS" > "$OUT/pytest.log" 2>&1
+echo "pytest_start=$(date '+%T.%N')" >> "$OUT/host_state.txt"
+"$VENV/bin/python" -m pytest -v --durations=0 "$SMOKE" --dictionary "$DICT_ABS" > "$OUT/pytest.log" 2>&1
 RC=$?
+echo "pytest_end=$(date '+%T.%N')" >> "$OUT/host_state.txt"
 echo "pytest_exit=$RC" | tee -a "$OUT/pytest.log"
 
 kill -INT "$GDS_PID" 2>/dev/null

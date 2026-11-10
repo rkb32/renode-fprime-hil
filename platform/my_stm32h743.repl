@@ -215,7 +215,7 @@ i2c2: I2C.STM32F7_I2C @ sysbus 0x40005800
     EventInterrupt -> exti@23
     ErrorInterrupt -> nvic@34
 
-i2c1: I2C.STM32F7_I2C @ sysbus 0x40005400
+i2c1: I2C.STM32H7_I2C @ sysbus 0x40005400
     EventInterrupt -> exti@22
     ErrorInterrupt -> nvic@32
 
@@ -430,9 +430,8 @@ else:
 '''
 
 
-// M0 stand-in: no MPU-6050 model in Renode. Renode's ICM-20948 answers on I2C address 0x68,
-// so the firmware gets an ACK instead of a NACK. WHO_AM_I values differ; this is not the MPU-6050.
-mpu_stub: Sensors.ICM20948 @ i2c1 0x68
+// MPU-6050 register model (platform/MPU6050.cs, loaded by boot.resc.in). Not validated against silicon.
+mpu: Sensors.MPU6050 @ i2c1 0x68
 
 // M0 stand-in: BMP280 on SPI5 (register-level Python model, see bmp280_spi5.py). Not a real sensor model.
 bmp280_spi5: Python.PythonPeripheral @ sysbus 0x40015000

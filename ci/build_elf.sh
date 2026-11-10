@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# CI build job: pinned reference + renode-only patch -> ReferenceDeployment ELF and dictionary in $OUT.
+# CI build job: pinned reference + Renode patch -> ReferenceDeployment ELF and dictionary in $OUT.
+# Usage: ci/build_elf.sh [--with-imu]   (default: IMU removed via renode-only.patch; --with-imu keeps the IMU)
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 OUT="${OUT:-$ROOT/out}"
@@ -21,7 +22,7 @@ export PATH="$TC_DIR/bin:$PATH"
 # Cache hits skip the sha256 check, so also pin the compiler version (no download needed)
 arm-none-eabi-gcc --version | head -n 1 | grep -q "12.2.1" || { echo "unexpected arm-none-eabi-gcc version"; arm-none-eabi-gcc --version | head -n 1; exit 1; }
 
-"$ROOT/ci/fetch_reference.sh" "$WORK/reference" --submodules
+"$ROOT/ci/fetch_reference.sh" "$WORK/reference" --submodules "$@"
 python3 -m venv "$WORK/venv"
 "$WORK/venv/bin/pip" install -q -r "$ROOT/ci/requirements.txt"
 export PATH="$WORK/venv/bin:$PATH"

@@ -38,6 +38,14 @@ Date: 2026-11-07. Drafted by Claude Haiku 5.5 with Opus 5.5 decision checks. Not
 - The earlier "framing mismatch" and "24 decoded packets" conclusions were wrong. They came from a parse offset error.
 - `bridge_clean.bin` and `bridge_raw.bin` are appended across runs. Use only one run's bytes.
 
+## Open: `test_cmd_no_op` flake (M2, 2026-11-09)
+- Morning batch (`m2_flake.sh`, `main` commit, ELF mtime 2026-11-07 17:27, not hash-checked against the morning run): 9 of 10 runs failed `test_cmd_no_op` with 0 matching events in the 5 s window. In 8 of the 9, GDS logged `OpCodeCompleted`. Whether the reply was late or the matcher missed it is not confirmed.
+- Same day: 10 of 10 sequential runs of the unmodified test passed (call 0.11–2.71 s). A re-run of the morning batch (`flake2-*`) passed 10 of 10. Five runs with a 30 s wait passed (call up to 5.32 s).
+- Cause: unexplained. The morning host state was not recorded. Environment suspected.
+- The smoke test file is identical to upstream 89f1924. The runner now logs host state and leftover processes (`host_state.txt`) and per-test timing (`--durations=0`).
+- Status: not reproduced today. The 5 s wait is unchanged.
+- 2026-11-10, IMU-kept build (`--with-imu`, local): 3 of 4 runs passed. The failing run (`~/imu-rep-3`) had 0 events matched for `test_cmd_no_op`. Its GDS event log shows CMD_NO_OP and OpCodeCompleted about 1 s after pytest started, inside the 5 s window. So the events were logged in time; the test API did not match them. Cause not found.
+
 ## Models and build changes (Renode-only)
 1. **PWR peripheral** (Python) in `my_stm32h743.repl`. Replaces Renode's plain tag. Returns ready bits.
 2. **ICM-20948 stand-in** at I2C 0x68 (`mpu_stub`). Attaches Renode's existing model. Not an MPU-6050. The IMU driver is removed from the topology.
