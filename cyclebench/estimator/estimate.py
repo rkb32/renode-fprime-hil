@@ -191,7 +191,9 @@ def instr_cycles(cls, mn, ops, taken):
     if cls == 'branch_uncond':
         return 1 + P                       # TRM: B, BL, BX, BLX = 1+P
     if cls == 'branch_cond':
-        return (1 + P) if taken else 1     # TRM: B<cc>, CBZ, CBNZ: 1 or 1+P
+        if taken:
+            return COST.get('branch_taken', 1 + P)     # TRM: B<cc>, CBZ, CBNZ: 1 or 1+P
+        return COST.get('branch_not_taken', 1)
     if cls in ('ldm', 'stm'):
         n, has_pc = reg_list(ops)
         extra = P if (cls == 'ldm' and has_pc) else 0   # TRM: LDM/POP with PC = 1+N+P

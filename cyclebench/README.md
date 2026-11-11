@@ -14,6 +14,7 @@ Software-only cost study of F´ telemetry writes, tied to nasa/fprime #5572. Ren
 
 - Traces (about 600 MB in total) are not kept. Regenerate them into `traces/` (git-ignored) from the repo root:
   `Renode.exe --disable-xwt --console -e 'include @results/trace1000.resc'` (same form for the other `results/*.resc`).
+- Required inputs: `artifacts/d739/img_{1000,2000,3000}.elf` and `artifacts/1031/img_{1000,2000,3000}.elf`, built at -O3 from commits d739002 and 1031e28b1d. The build script is not in this repo yet, so build these ELFs separately first. Without them, skip the trace regeneration; the estimator needs the traces it writes.
 - The `.resc` files use `$ORIGIN/../artifacts/...` and `$ORIGIN/../traces/...`. Relative paths without `$ORIGIN` fail to create trace files in Renode 1.16.0.
 - Tested: all four `.resc` files rerun with no errors. Each regenerated trace is byte-identical to the original (md5 match).
 - Estimator: `python estimator/estimate.py --pair <low.txt> <high.txt> <n_low> <n_high>`. Flags: `--hclk-mhz` (default 16, which is 0 WS in every supply range), `--vdd` (default 2.7-3.6), `--flash-mode none|line|cache`. Wait-state bands are RM0368 Table 6 (verified); cache timing is unverified.
