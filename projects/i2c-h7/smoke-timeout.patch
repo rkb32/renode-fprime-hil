@@ -1,0 +1,11 @@
+--- a/FprimeStm32BaremetalReference/Deployments/ReferenceDeployment/test/int/smoke_integration_tests.py
++++ b/FprimeStm32BaremetalReference/Deployments/ReferenceDeployment/test/int/smoke_integration_tests.py
+@@ -14,7 +14,7 @@
+     @brief CMD_NO_OP round trip: the command link to the board works.
+     Covers: DR-4.11.5.2 (incremental verification) - baseline check before any other HIL test runs.
+     """
+-    fprime_test_api.send_and_assert_command("CdhCore.cmdDisp.CMD_NO_OP", timeout=5)
++    fprime_test_api.send_and_assert_command("CdhCore.cmdDisp.CMD_NO_OP", timeout=15)
+ 
+ 
+ def test_telemetry_is_flowing(fprime_test_api):

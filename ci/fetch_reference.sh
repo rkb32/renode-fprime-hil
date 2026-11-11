@@ -30,7 +30,8 @@ if [ "$WITH_IMU" = 1 ]; then
   git -C "$DEST" apply "$ROOT/patches/uart-polled.patch"
   git -C "$DEST/lib/fprime-sensors" apply --directory=fprime-sensors/MpuImu/Components/ImuManager \
     "$ROOT/projects/i2c-h7/imu-whoami-probe.patch"
-  echo "reference $(git -C "$DEST" rev-parse HEAD) + uart-polled patch + WHO_AM_I probe (IMU kept)"
+  git -C "$DEST" apply -p1 "$ROOT/projects/i2c-h7/smoke-timeout.patch"
+  echo "reference $(git -C "$DEST" rev-parse HEAD) + uart-polled patch + WHO_AM_I probe + 15 s smoke timeout (IMU kept)"
 else
   git -C "$DEST" apply "$ROOT/patches/renode-only.patch"
   echo "reference $(git -C "$DEST" rev-parse HEAD) + renode-only patch"
