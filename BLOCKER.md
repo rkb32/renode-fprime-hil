@@ -6,7 +6,7 @@ Date: 2026-11-07. Drafted by Claude Haiku 5.5 with Opus 5.5 decision checks. Not
 - **M0 (UART output from the firmware): met.** The firmware boots and sends telemetry.
 - **M1 (GDS smoke tests): met.** The unmodified smoke tests (original 15 s and 5 s timeouts) pass 2 of 2 in 10.3 s (`m1_final.sh`, log `m1_final_logs/pytest.log`), using `bridge_multi.py`. The earlier failures came from the test bridge, not the GDS (see Corrections).
 - **M3, IMU (blocked):** with the IMU restored (UART still POLLED), both smoke tests fail. The board sends about 1 KB, then stops. Renode has no STM32H7 I2C model (`STM32H7_I2C` not in the install; `i2c1` is `STM32F7_I2C`), so the firmware's I2C driver hangs during init. Verified by two program-counter samples: both land in the HAL's `I2C_WaitOnSTOPFlagUntilTimeout` / `I2C_IsErrorOccurred`, which poll for a STOP flag the F7 model never sets. Unverified: whether that wait ever times out. The MPU-6050 model (`platform/MPU6050.cs`) was never read by the firmware. The CI build stays IMU-free and M1 passes on it.
-- **M3, SPI5 BMP280 (blocked):** Renode has no SPI5 controller model (only spi4 in the platform). The Python stand-in remains.
+- **M3, SPI5 BMP280 (done in the model, 2026-11-11):** `SPI.STM32H7_SPI` instantiates at 0x40015000 as `spi5`, and the C# BMP280 model (`platform/BMP280.cs`) answers chip ID 0x58. The unmodified smoke tests pass 2/2 with it. The Python stand-in is removed. Not validated against silicon.
 
 ## Verified
 - The ELF builds in WSL (`fprime-util`, Arm GNU 12.2) with the IMU removed and UART TX in polled mode.
@@ -33,6 +33,7 @@ Date: 2026-11-07. Drafted by Claude Haiku 5.5 with Opus 5.5 decision checks. Not
 - **ELF size gap (explained in part):** the loaded sections match between the local build and the CI build (`.text` and `.bss` identical). `.rodata` differs by 832 bytes (version string `-dirty` and build paths). The remaining ~7.8 KB of file size is in non-loaded debug sections, not checked.
 - **Root cause of the "no telemetry" failure (verified):** `bridge_wsl.py` accepts one TCP client. In run 4, `ss` showed the bridge accepted a different client (127.0.0.1:45098), while comm's connection (127.0.0.1:52802, comm pid 12492) sat unaccepted in the listen backlog. comm read 0 bytes; the bridge's 60 KB went to the other client. The GDS was not at fault. Fix: `bridge_multi.py` serves every client. With it, the unmodified M1 tests pass.
 - Run 1 of the comm hook was invalid (Renode not running). Runs 2–4 are logged in `m2_instr_logs/`.
+- **"Renode has no SPI5 controller" (wrong, checked 2026-11-11):** `SPI.STM32H7_SPI` is a per-instance model and loads at 0x40015000. Renode's own `platforms/cpus/stm32h743.repl` has only a plain Tag there. Verified by loading the platform with no errors and passing the smoke tests.
 - `m1_long.sh` does pass `--gui none`; an earlier note said it did not.
 - The "bridge stall at about 840 bytes" was the rate limit above, not a deadlock.
 - The earlier "framing mismatch" and "24 decoded packets" conclusions were wrong. They came from a parse offset error.
@@ -49,7 +50,7 @@ Date: 2026-11-07. Drafted by Claude Haiku 5.5 with Opus 5.5 decision checks. Not
 ## Models and build changes (Renode-only)
 1. **PWR peripheral** (Python) in `my_stm32h743.repl`. Replaces Renode's plain tag. Returns ready bits.
 2. **ICM-20948 stand-in** at I2C 0x68 (`mpu_stub`). Attaches Renode's existing model. Not an MPU-6050. The IMU driver is removed from the topology.
-3. **BMP280 SPI5 stand-in** (`bmp280_spi5.py`). Register-level Python model. Not a real sensor model.
+3. **BMP280 SPI5 model** (`platform/BMP280.cs`, on `spi5` = `SPI.STM32H7_SPI`). Register-level C# model; it replaced the Python stand-in. Not a real sensor model.
 4. **Firmware build changes:** IMU subtopology removed from `topology.fpp`; UART TX set to `TransferMode::POLLED`. Originals saved as `.orig`.
 
 ## Next steps if resumed

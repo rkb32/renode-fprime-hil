@@ -4,12 +4,12 @@
 Model the STM32H7 SPI5 controller so the F´ reference firmware can talk to a BMP280 at 0x40015000. Done when the firmware reads the BMP280 chip ID (0xD0 = 0x58) through a C# BMP280 model, and the smoke tests still pass.
 
 ## Why
-- Renode's installed build has no SPI5 controller. Our platform has `spi4: SPI.STM32H7_SPI` at 0x40013400 and nothing for SPI5 (verified by listing SPI instances in `platform/my_stm32h743.repl`).
-- We use a Python register-level stand-in for SPI5 (`platform/bmp280_spi5.py`). It answers the firmware's register writes but is not a real controller or sensor.
-- The C# device interface `ISPIPeripheral` exists in Renode (`Transmit(byte)`, `FinishTransmission()`, verified by reflection), but a BMP280 model would need a SPI5 controller to attach to.
+- Renode's installed `platforms/cpus/stm32h743.repl` has a plain Tag for SPI5, not a controller. But `SPI.STM32H7_SPI` instantiates at 0x40015000 (verified 2026-11-11 by loading the platform and running the smoke tests).
+- The Python stand-in (`platform/bmp280_spi5.py`) has been removed. `platform/BMP280.cs` now answers the firmware's SPI transactions.
+- The C# device interface `ISPIPeripheral` exists in Renode (`Transmit(byte)`, `FinishTransmission()`, verified by reflection). The BMP280 model attaches to `spi5` (`Sensors.BMP280 @ spi5`).
 
-## Approach (not yet checked)
-- Write an STM32H7 SPI controller as a C# peripheral on sysbus at 0x40015000, or reuse `spi4`'s model with a different base address if the register layouts match (check first).
+## Approach (done)
+- Reuse `spi4`'s model at 0x40015000: `spi5: SPI.STM32H7_SPI @ sysbus 0x40015000` in `platform/my_stm32h743.repl`. Done; the firmware's BMP280 driver polls (TransferMode POLLED, the default in `open`) and reads chip ID 0x58.
 - Forward transfers to an `ISPIPeripheral` BMP280 model: first byte bit 7 = read, low bits = register; then auto-increment; `FinishTransmission` resets.
 - BMP280 map: chip ID 0xD0 = 0x58, reset 0xE0, ctrl_meas 0xF4, config 0xF5, status 0xF3, calibration 0x88–0xA1, data 0xF7–0xFC. From memory, unverified.
 
