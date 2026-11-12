@@ -4,6 +4,7 @@
 # Controller and sensor models used by the platform file (C# peripherals, compiled by Renode at load time).
 include @__MODELS__/STM32H7_I2C.cs
 include @__MODELS__/MPU6050.cs
+include @__MODELS__/BMP280.cs
 
 mach create "stm32h753"
 machine LoadPlatformDescription @__REPL__

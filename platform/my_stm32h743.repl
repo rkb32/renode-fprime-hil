@@ -137,6 +137,8 @@ rtc: Timers.STM32F4_RTC @ sysbus 0x58004000
 spi4: SPI.STM32H7_SPI @ sysbus 0x40013400
     DMARecieve -> dma2@4
 
+spi5: SPI.STM32H7_SPI @ sysbus 0x40015000
+
 i2c4: I2C.STM32F7_I2C @ sysbus 0x58001C00
     EventInterrupt -> exti@62
     ErrorInterrupt -> exti@63
@@ -433,8 +435,6 @@ else:
 // MPU-6050 register model (platform/MPU6050.cs, loaded by boot.resc.in). Not validated against silicon.
 mpu: Sensors.MPU6050 @ i2c1 0x68
 
-// M0 stand-in: BMP280 on SPI5 (register-level Python model, see bmp280_spi5.py). Not a real sensor model.
-bmp280_spi5: Python.PythonPeripheral @ sysbus 0x40015000
-    size: 0x400
-    initable: false
-    filename: "@@BMP280_SCRIPT@@"
+// BMP280 on SPI5 (C# model, platform/BMP280.cs, loaded by boot.resc.in). Not validated against silicon.
+// Replaces the Python stand-in (bmp280_spi5.py), which mapped the same address.
+bmp280: Sensors.BMP280 @ spi5
