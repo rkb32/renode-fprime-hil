@@ -6,7 +6,7 @@ Date: 2026-11-07. Drafted by Claude Haiku 5.5 with Opus 5.5 decision checks. Not
 - **M0 (UART output from the firmware): met.** The firmware boots and sends telemetry.
 - **M1 (GDS smoke tests): met.** The unmodified smoke tests (original 15 s and 5 s timeouts) pass 2 of 2 in 10.3 s (`m1_final.sh`, log `m1_final_logs/pytest.log`), using `bridge_multi.py`. The earlier failures came from the test bridge, not the GDS (see Corrections).
 - **M3, IMU (blocked):** with the IMU restored (UART still POLLED), both smoke tests fail. The board sends about 1 KB, then stops. Renode has no STM32H7 I2C model (`STM32H7_I2C` not in the install; `i2c1` is `STM32F7_I2C`), so the firmware's I2C driver hangs during init. Verified by two program-counter samples: both land in the HAL's `I2C_WaitOnSTOPFlagUntilTimeout` / `I2C_IsErrorOccurred`, which poll for a STOP flag the F7 model never sets. Unverified: whether that wait ever times out. The MPU-6050 model (`platform/MPU6050.cs`) was never read by the firmware. The CI build stays IMU-free and M1 passes on it.
-- **M3, SPI5 BMP280 (blocked):** Renode has no SPI5 controller model (only spi4 in the platform). The Python stand-in remains.
+- **M3, SPI5 BMP280 (blocked):** Renode's STM32H7 SPI class exists (spi4 uses it), but the stock H7 platform maps SPI5 as a plain tag, so there is no SPI5 controller. The Python stand-in remains.
 
 ## Verified
 - The ELF builds in WSL (`fprime-util`, Arm GNU 12.2) with the IMU removed and UART TX in polled mode.
