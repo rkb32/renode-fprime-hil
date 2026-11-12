@@ -1,6 +1,6 @@
 // BMP280 SPI register-level model for Renode (M3 spike). Not validated against silicon.
 // Covers: chip ID (0xD0 = 0x58), soft reset (0xE0 = 0xB6), status (0xF3), ctrl_meas (0xF4), config (0xF5),
-// calibration (0x88..0xA1) and measurement data (0xF7..0xFC). Values match the former Python stand-in (bmp280_spi5.py).
+// calibration (0x88..0xA1) and measurement data (0xF7..0xFC). Values match the former Python stand-in.
 // Protocol, as used by the reference firmware's BmpManager: the first byte of each transfer is the register address.
 // Reads send address | 0x80, writes send address & 0x7F. Later bytes are data, with the address auto-incrementing.
 // Load with: include @BMP280.cs  (before the platform that instantiates Sensors.BMP280).

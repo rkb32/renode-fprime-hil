@@ -21,9 +21,8 @@ WORK="${WORK:-$(mktemp -d)}"
 mkdir -p "$WORK"
 ELF_ABS="$(readlink -f "$ELF")"
 
-# Private copy of the platform files, filled in as ci/run_hil.sh does
-cp "$ROOT/platform/bmp280_spi5.py" "$WORK/"
-sed "s|@@BMP280_SCRIPT@@|$WORK/bmp280_spi5.py|" "$ROOT/platform/my_stm32h743.repl" > "$WORK/my_stm32h743.repl"
+# Private copy of the platform file, as ci/run_hil.sh makes it
+cp "$ROOT/platform/my_stm32h743.repl" "$WORK/my_stm32h743.repl"
 
 # Test-only models: the NACK-injecting I2C copy and the traced MPU-6050 copy
 python3 "$HERE/make_nack_model.py" "$ROOT/platform/STM32H7_I2C.cs" "$WORK/STM32H7_I2C_nack.cs"
@@ -32,6 +31,7 @@ python3 "$HERE/make_mpu_trace.py" "$ROOT/platform/MPU6050.cs" "$WORK/MPU6050_tra
 cat > "$WORK/nack_trace.resc" <<EOF
 include @$WORK/STM32H7_I2C_nack.cs
 include @$WORK/MPU6050_trace.cs
+include @$ROOT/platform/BMP280.cs
 mach create "stm32h753"
 machine LoadPlatformDescription @$WORK/my_stm32h743.repl
 # No UART terminal socket: the I2C trace does not need one (a fixed port clashed with another Renode run).

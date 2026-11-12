@@ -436,5 +436,5 @@ else:
 mpu: Sensors.MPU6050 @ i2c1 0x68
 
 // BMP280 on SPI5 (C# model, platform/BMP280.cs, loaded by boot.resc.in). Not validated against silicon.
-// Replaces the Python stand-in (bmp280_spi5.py), which mapped the same address.
+// Replaces the former Python stand-in, which mapped the same address.
 bmp280: Sensors.BMP280 @ spi5
