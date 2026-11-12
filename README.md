@@ -6,7 +6,7 @@ Runs the F´ reference deployment for STM32H7 (`fprime-community/fprime-stm32-ba
 
 - **Smoke job (no hardware):** passes locally, 2 of 2 unmodified tests.
 - **IMU (MPU-6050):** in the IMU-kept CI build (`build-elf-imu`, `renode-smoke-imu`); the IMU-removed build is still the default. The STM32H7 I2C model and MPU-6050 model are merged to `main`; see [projects/i2c-h7/README.md](projects/i2c-h7/README.md). Not validated against silicon.
-- **BMP280 on SPI5:** Python stand-in only. Renode's STM32H7 SPI class exists (spi4 uses it), but the stock H7 platform maps SPI5 as a plain tag, so there is no SPI5 controller.
+- **BMP280 on SPI5:** on branch `d6-bmp280-spi5`, a C# SPI model (`platform/BMP280.cs`) replaces the Python stand-in. Only the chip-ID read (0x58) is verified; calibration and measurement traffic are not.
 
 See `BLOCKER.md` for the details and what is unverified.
 
