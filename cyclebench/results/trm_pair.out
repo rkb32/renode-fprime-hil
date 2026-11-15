@@ -1,0 +1,31 @@
+trace_1000.txt: instr 1161452, est cycles 2428436
+trace_d739_2000.txt: instr 2315868, est cycles 4844320
+per unit (n 1000->2000): instr 1154.4, est cycles 2415.9
+  alu              est cycles/unit     475.1  instr/unit   475.1
+  branch_cond      est cycles/unit     216.0  instr/unit   100.0
+  branch_uncond    est cycles/unit     534.3  instr/unit   178.1
+  dbl              est cycles/unit     243.0  instr/unit    81.0
+  div              est cycles/unit      12.0  instr/unit     2.0
+  it               est cycles/unit       5.0  instr/unit     5.0
+  ldm              est cycles/unit     263.0  instr/unit    39.0
+  load             est cycles/unit     272.4  instr/unit   136.2
+  mls              est cycles/unit       4.0  instr/unit     2.0
+  mul              est cycles/unit       2.0  instr/unit     2.0
+  stm              est cycles/unit     199.0  instr/unit    39.0
+  store            est cycles/unit     190.1  instr/unit    95.1
+---
+trace_1031_1000.txt: instr 969388, est cycles 2045300
+trace_1031_2000.txt: instr 1931732, est cycles 4078031
+per unit (n 1000->2000): instr 962.3, est cycles 2032.7
+  alu              est cycles/unit     386.0  instr/unit   386.0
+  branch_cond      est cycles/unit     110.0  instr/unit    60.0
+  branch_uncond    est cycles/unit     534.3  instr/unit   178.1
+  dbl              est cycles/unit      57.0  instr/unit    19.0
+  div              est cycles/unit      12.0  instr/unit     2.0
+  it               est cycles/unit       5.0  instr/unit     5.0
+  ldm              est cycles/unit     266.0  instr/unit    40.0
+  load             est cycles/unit     274.3  instr/unit   137.2
+  mls              est cycles/unit       4.0  instr/unit     2.0
+  mul              est cycles/unit       2.0  instr/unit     2.0
+  stm              est cycles/unit     200.0  instr/unit    40.0
+  store            est cycles/unit     182.1  instr/unit    91.0

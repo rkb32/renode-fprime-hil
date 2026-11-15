@@ -1,0 +1,8 @@
+mach create "tr"
+machine LoadPlatformDescription @platforms/cpus/stm32f4.repl
+sysbus LoadELF $ORIGIN/../artifacts/1031/img_2000.elf
+sysbus.cpu CreateExecutionTracing "tracer" $ORIGIN/../traces/trace_1031_2000.txt Disassembly
+emulation RunFor "5"
+sysbus.cpu DisableExecutionTracing
+sysbus.cpu ExecutedInstructions
+quit
